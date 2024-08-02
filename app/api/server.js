@@ -14,6 +14,17 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname,'/')));
 app.use(express.static(path.join(__dirname,'/')));
 
+/**
+ * Handles api call to submit qoute request
+ * @param email
+ * @param firstName 
+ * @param lastName 
+ * @param compName 
+ * @param compPhone 
+ * @param servType
+ * @param phExt
+ * @param conPref
+ */
 app.post('/api/submitquoterequest',async(req,response) => {
    try {
     const {email, firstName,lastName,compName, compPhone, servType, servDesc, phExt,conPref}= req.body;
@@ -73,10 +84,20 @@ app.post('/api/submitquoterequest',async(req,response) => {
    }
 });
 
+/**
+ * Handles api call for assistance request
+ * @param email
+ * @param firstName
+ * @param lastName
+ * @param compName
+ * @param compPhone
+ * @param servDesc
+ * @param phExt
+ */
 app.post('/api/requsthelp',async(req,response) =>{
        
    try {
-        const {email, firstName,lastName,compName, compPhone,  servDesc, phExt}= req.body;
+        const {email, firstName,lastName,compName, compPhone, servDesc, phExt}= req.body;
         const msg = 'Your request for assistance has been sent. You shold recieve an email from us soon..  ';
     
         const  requestData = createLogObj(req);
@@ -125,6 +146,11 @@ app.post('/api/requsthelp',async(req,response) =>{
    }
 });
 
+/**
+ * Create site logging object
+ * @param {*} req 
+ * @returns 
+ */
 function createLogObj(req){
     const  requestData =
     {
