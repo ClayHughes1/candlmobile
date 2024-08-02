@@ -31,7 +31,9 @@ const ContactScreen = () => {
     const [isViewVisible, setIsViewVisible] = useState(false);
     const [emailMessage, setEmailMessage] = useState('');
 
-
+    /**
+     * Perform actions on screen loading
+     */
     useEffect(() => {
         const updateDimensions = () => {
             setScreenData(Dimensions.get('window'));
@@ -40,12 +42,6 @@ const ContactScreen = () => {
         // Lock the orientation to portrait
         Orientation.lockToPortrait();
 
-        // To lock to landscape, you can use
-        // Orientation.lockToLandscape();
-
-        // To unlock orientation (allow both orientations)
-        // Orientation.unlockAllOrientations();
-
         // Clean up the effect
         return () => {
             Orientation.unlockAllOrientations();
@@ -53,16 +49,21 @@ const ContactScreen = () => {
 
     }, []);
   
-    const btnSubmit = () => {
-        Alert.alert('Message', 'Hello');
-    };
+    // const btnSubmit = () => {
+    //     Alert.alert('Message', 'Hello');
+    // };
 
+    /**
+     * Handles View section visibility 
+     */
     const toggleViewVisibility = () => {
         setIsViewVisible(!isViewVisible);
     };
 
+    /**
+     * Handle calling process based on platform 
+     */
     const callCompany = () => {
-        // let url = `tel:${phoneNumber}`;
         let phoneNum = phoneNumber;
 
         if (Platform.OS !== 'android') {
@@ -83,6 +84,9 @@ const ContactScreen = () => {
         .catch((err) => console.error('Error occurred', err));
     };
       
+    /**
+     * Emailing functionality
+     */
     const sendEmail = () => {
         const email = 'candl.ent.email@canl-enterprises.com';
         const subject = 'Customer Inquiry';
@@ -142,15 +146,15 @@ const ContactScreen = () => {
 
                     {isViewVisible && (
                         <View style={styles.emailPortal}>
-                        <Text style={styles.label}>Your Message:</Text>
-                        <TextInput
-                            style={styles.textInput}
-                            multiline
-                            placeholder="Write your message here"
-                            value={emailMessage}
-                            onChangeText={setEmailMessage}
-                        />
-                        <Button title="Send Email" onPress={sendEmail} />
+                            <Text style={styles.label}>Your Message:</Text>
+                            <TextInput
+                                style={styles.textInput}
+                                multiline
+                                placeholder="Write your message here"
+                                value={emailMessage}
+                                onChangeText={setEmailMessage}
+                            />
+                            <Button title="Send Email" onPress={sendEmail} />
                         </View>
                     )}
 
@@ -197,15 +201,6 @@ const styles = StyleSheet.create({
         fontSize: 25,
         fontWeight: '600',
         padding:10,
-        color: '#000',
-    },
-    pageTitle:{
-        marginTop: 5,
-        justifyContent: 'flex-start',
-        alignItems: 'flex-start',
-        fontSize: 30,
-        fontWeight: '600',
-        padding:2,
         color: '#000',
     },
     btnSubmit:{

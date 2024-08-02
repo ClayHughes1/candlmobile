@@ -56,7 +56,6 @@ const getId = async(idType,object) => {
     await clientPool.connect()
     // Connect to the database
     const request = await clientPool.request();
-    console.log(JSON.stringify(object));
     try {
         // idType = 'CQ';
 
@@ -97,7 +96,6 @@ const getId = async(idType,object) => {
                 break;
             case 'CQ':
                 //Client qoute
-                // console.log('GETTING THE QOUTE ID ......................... \n');
                 request.input('srchType', sql.VarChar(50),'CQ');
                 dbParams = {
                     srchValue1:object.EmailAddress,
@@ -109,7 +107,6 @@ const getId = async(idType,object) => {
                 };
                 break;
             case 'CA':
-                console.log('does ca id exist');
                 //Client Assistance Request
                 request.input('srchType', sql.VarChar(50),'CA');
                 dbParams = {
@@ -121,7 +118,6 @@ const getId = async(idType,object) => {
                     srchEnd:new  Date()
                 };
 
-                console.log('dbparams   \n'+JSON.stringify(dbParams));
                 break;
             default:
                 break;
@@ -136,8 +132,6 @@ const getId = async(idType,object) => {
 
 
         result = await request.execute('GetIdFromTables');
-        // console.log(request.parameters);
-        // console.log('THE RESULTS ARE ...........   \n'+JSON.stringify(result.recordsets[0][0].SelectedID));
         return result.recordsets[0][0].SelectedID;
     }catch(err){
         await logSiteError(err);
@@ -151,11 +145,7 @@ const getClient = async() =>{
 
         const request = await clientPool.connect();
         const result  = await request.query('uspGetSpecialOfferAsJSON');
-
-        // console.log('Client Results...................  \n'+JSON.stringify(result));
-
-        // return userMap;
-
+        return result;
     }catch(err)
     {
         await logSiteError(err);
@@ -168,7 +158,6 @@ const getClientsAsJSON = async() =>{
         const request = await clientPool.connect();
         const result  = await request.query('uspGetClientsAsJSON');
         // Return the data as JSON object
-        // console.log('records     \n'+JSON.stringify(result.recordsets[0]));
     } catch (err) {
         await logSiteError(err);
         throw err;
@@ -334,7 +323,6 @@ const insertObjectToSql = async(typeData,object) => {
     let result;
     try{
         const id = await getId(typeData,object);
-        console.log('ID   \n'+id);
         if(id > 0)
         {
             return 0;
@@ -344,7 +332,6 @@ const insertObjectToSql = async(typeData,object) => {
             switch(typeData)
             {
                 case 'IBI':
-                    console.log('inserting the data ');
                     // Add parameters to the request
                     request.input('ClientID', sql.Int, object.clientID);
                     request.input('InvoiceDate', sql.Date, object.invoiceDate);
@@ -537,7 +524,6 @@ const insertClientLogin = async(username,password) => {
 }
 
 const authenticateUser = async(username,password) => {
-    console.log(username+'              '+password);
     await clientPool.connect();
     // Connect to the database
     const request = await clientPool.request();

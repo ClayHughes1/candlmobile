@@ -1,8 +1,5 @@
 require('dotenv').config();
 
-
-
-
 // client config 
 const clientConfig = {
     user:process.env.DB_USERNAME,
@@ -30,8 +27,6 @@ const adminConfig = {
     },
     port:1433
 }
-
-// console.log(adminConfig.database);
 
 module.exports = {
     clientConfig,

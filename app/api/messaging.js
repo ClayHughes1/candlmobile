@@ -2,119 +2,15 @@ require('dotenv').config();
 const nodemailer = require('nodemailer');
 const path = require('path');
 const dbOps    = require('./dbOps');
+const emailTemplates = require('./../libs/EmailTemplate.js')
 
 let htmlBody;
 
-//create html body section 
-const qouteEmailBody = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quote Request Received</title>
-</head>
-<body>
 
-<!-- Header -->
-<h1 style="font-size: 24px; font-weight: bold;">C&amp;L Enterprises</h1>
-
-<!-- Message -->
-<p>Dear Valued Client,</p>
-<p>We have received your quote request. Our team at C&amp;L Enterprises is currently working diligently on it and will contact you as soon as the estimates have been created based on your specific service needs.</p>
-
-<!-- Contact Information -->
-<p>For any urgent inquiries, please feel free to contact us at: <strong>220-215-0612</strong>.</p>
-
-</body>
-</html>
-`;
-
-const conEmailBody = async(rqstor) => {
-  const confEmail = `
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Request For Assistance Confirmation</title>
-  </head>
-  <body>
-      <h4>Request For Assistance  Received</h4>
-      <p>Dear ${rqstor.recipientName},</p>
-      <p>We have received your request for assistance. Our team will review your request and get back to you shortly.</p>
-      <p>Thank you for choosing our services.</p>
-      <p>Best regards,</p>
-      <p>C&L Enterprises</p>
-  </body>
-  </html>
-`;
-
-return confEmail;
-}
-
-const crspEmailBody = async(mssgParams,qouteId,type) => {
-  let compEmailBody = 
-  `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Project Inquiry Information ${type}: #${qouteId}</title>
-    </head>
-    <body>
-        <h2>Project Inquiry Details</h2>
-        <p><strong>Qoute Id:</strong> ${qouteId}</p>
-        <p><strong>Service Type:</strong> ${mssgParams.ServiceTypeId}</p>
-        <p><strong>Project Description:</strong> ${mssgParams.ProjectDescription}</p>
-        <p><strong>Estimated Cost:</strong> ${mssgParams.EstimatedCost}</p>
-        <p><strong>Additional Notes:</strong> ${mssgParams.AdditionalNotes}</p>
-        <hr>
-        <h3>Contact Information</h3>
-        <p><strong>Company Name:</strong> ${mssgParams.CompanyName}</p>
-        <p><strong>First Name:</strong> ${mssgParams.FirstName}</p>
-        <p><strong>Last Name:</strong> ${mssgParams.LastName}</p>
-        <p><strong>Email Address:</strong> ${mssgParams.EmailAddress}</p>
-        <p><strong>Business Phone:</strong> ${mssgParams.BusinessPhone}</p>
-        <p><strong>Contact Preference:</strong> ${mssgParams.ContactPreference}</p>
-        <p><strong>Extension:</strong> ${mssgParams.Extension}</p>
-    </body>
-    </html>
-  `;
-  return compEmailBody;
-}
-
-const crspEmailAssistBody = async(mssgParams,senderName) => {
-  let compEmailBody = 
-  `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Assistance requrest - ${senderName}</title>
-    </head>
-    <body>
-        <h3>Contact Information</h3>
-        <p><strong>Company Name:</strong> ${mssgParams.CompanyName}</p>
-        <p><strong>First Name:</strong> ${mssgParams.FirstName}</p>
-        <p><strong>Last Name:</strong> ${mssgParams.LastName}</p>
-        <p><strong>Email Address:</strong> ${mssgParams.EmailAddress}</p>
-        <p><strong>Business Phone:</strong> ${mssgParams.BusinessPhone}</p>
-        <p><strong>Extension:</strong> ${mssgParams.Extension}</p>
-        <p><strong>Description:</strong> ${mssgParams.Description}</p>
-    </body>
-    </html>
-  `;
-  return compEmailBody;
-}
-
-// Create a transporter with your email service provider's SMTP settings
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // e.g., 'gmail'
+    service: 'gmail', 
     host:'smtp.gmail.com',
-    port:587,//can use 465 as well, but is deprecated and is an outdated protocol
+    port:587,
     secure:false,
     auth: {
       user: process.env.EMAIL_FROM,
@@ -125,111 +21,43 @@ const transporter = nodemailer.createTransport({
 //Create email body
 const createBody = async(client) => {
   htmlBody = '<div><p>'+client.firstname+'</p><p>'+client.lastname+'</p><p>'+client.companyname+'</p><p>'+client.email+'</p><p>'+client.phone+'</p></div>';
-  console.log('html body   '+htmlBody);
   return htmlBody;
 }
 
-// Function to send an email
-const sendQouteMail = async (emailTo) => {
-    try {
-      console.log('EMAIL   \n',emailTo);
-      // Send mail with defined transport object
-      const info = await transporter.sendMail({
-        from: process.env.EMAIL_FROM, // Sender's email address
-        to: emailTo, // Recipient's email address
-        subject: 'Your service qoute', // Subject line
-        text: 'Your service qoute has been recieved', // Plain text body
-        html: qouteEmailBody,
-      }).catch((err) => {
-        console.log('ERROR 1 \n',err);
-        dbOps.logSiteError(err);
-        response.status(500).json({ error: 'Internal Server Error' });
-      });
-      console.log(`Email sent successfully. Message ID: ${info.messageId}`);
-    } catch (error) {
-      console.log('ERROR 2 \n',error);
-
-      console.error(`Error sending email: ${error.message}`);
-    }
-};
-
-// Send assistance request cnofrimation email
-const sendConHelpEmail = async(emailTo,recipient) => {
-  let emailBody = (await conEmailBody(recipient)).toString();
+// Generic function to send an email
+const sendEmail = async (to, subject, text, html) => {
   try {
-    console.log('RECIPIENT    \n'+JSON.stringify(recipient));
-    console.log(emailBody);
-
-    // Send mail with defined transport object
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM, // Sender's email address
-      to: emailTo, // Recipient's email address
-      subject: 'Your request for assistance', // Subject line
-      text: 'We have recieved your request for assistance', // Plain text body
-      html: emailBody,
-    }).catch((err) => {
-        dbOps.logSiteError(err);
-        response.status(500).json({ error: 'Internal Server Error' });
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to,
+      subject,
+      text,
+      html,
     });
-    console.log(`Email sent successfully. Message ID: ${info.messageId}`);
-  } catch (error) {
-    console.error(`Error sending email: ${error.message}`);
+  } catch (err) {
+    dbOps.logSiteError(err);
+    console.error(`Error sending email: ${err.message}`);
   }
 };
 
-const sendEmailToCompAccount = async(inpValues,reqType,keyVal) => {
-  console.log('sending email to company account  \n'+JSON.stringify(inpValues));
-  console.log('KEYVAL \n',keyVal);
-  let reqEmail = reqType === 'qoute'?await crspEmailBody(inpValues,keyVal,reqType):
-  await  crspEmailAssistBody(inpValues,reqType,keyVal);
-  console.log('REQ type \n',reqType);
+const sendQouteMail = (emailTo) => sendEmail(emailTo, 'Your service quote', 'Your service quote has been received', emailTemplates.quoteEmailBody);
 
-  console.log('REQ EMAIL \n',reqEmail);
-  try{
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM, // Sender's email address
-      to: process.env.EMAIL_ADD, // Recipient's email address
-      subject: reqType, // Subject line
-      text: 'Client request type ${reqType}', // Plain text body
-      html: reqEmail,
-    }).catch((err) => {
-      console.log('ERROR 3 \n',err);
+const sendConHelpMail = (emailTo, recipient) => sendEmail(emailTo, 'Your request for assistance', 'We have received your request for assistance', emailTemplates.conEmailBody(recipient));
 
-      dbOps.logSiteError(err);
-      response.status(500).json({ error: 'Internal Server Error' });
-    });
-  } catch (error) {
-    console.log('ERROR 4 \n',error);
+const sendCrspEmail = (emailTo, mssgParams, qouteId, type) => sendEmail(emailTo, `Project Inquiry Information ${type}: #${qouteId}`, 'Project Inquiry Details', emailTemplates.crspEmailBody(mssgParams, qouteId, type));
 
-    console.error(`Error sending email: ${error.message}`);
-  }
-}
+const sendCrspEmailAssist = (emailTo, mssgParams, senderName) => sendEmail(emailTo, `Assistance request - ${senderName}`, 'Assistance request details', emailTemplates.crspEmailAssistBody(mssgParams, senderName));
 
-const sendPassReset = async(emailTo) => {
-  console.log('EMAIL RESET \n'+emailTo);
-  // Construct the reset password link with the recipient's email address
+const sendPassReset = (emailTo) => {
   const resetPasswordLink = `http://localhost:4000/api/passreset?email=${emailTo}`;
-  const htmlBody = `<p>Hello,</p><p>Please click on the following link to reset your password:</p><a href="${resetPasswordLink}">Reset Password</a>` 
-
-  const info = await transporter.sendMail({
-    from: process.env.EMAIL_FROM, // Sender's email address
-    to: emailTo, // Recipient's email address
-    subject: 'Password Reset', // Subject line
-    text: 'You have requested to reset your password.', // Plain text body
-    html: htmlBody
-  }).catch((err) => {
-      dbOps.logSiteError(err);
-      response.status(500).json({ error: 'Internal Server Error' });
-  });
-  console.log('INFO              \n'+JSON.stringify(info));
-
-}
+  const htmlBody = `<p>Hello,</p><p>Please click on the following link to reset your password:</p><a href="${resetPasswordLink}">Reset Password</a>`;
+  return sendEmail(emailTo, 'Password Reset', 'You have requested to reset your password.', htmlBody);
+};
 
 module.exports = {
-  // sendMail,
   createBody,
   sendQouteMail,
-  sendConHelpEmail,
+  sendConHelpMail,
   sendPassReset,
   sendEmailToCompAccount
 };

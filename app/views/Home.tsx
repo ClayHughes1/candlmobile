@@ -11,7 +11,6 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-
 import {ParamListBase,} from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -21,6 +20,9 @@ const HomeScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
     const [screenData, setScreenData] = useState(Dimensions.get('window'));
 
+    /**
+     * Perform actions on screen load
+     */
     useEffect(() => {
 
         const updateDimensions = () => {

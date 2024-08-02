@@ -23,6 +23,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {RadioGroup} from 'react-native-radio-buttons-group';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Orientation from 'react-native-orientation-locker';
+import { Item , RadioButton} from './../../src/types/types.ts'; 
 
 const HelpScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -38,6 +39,9 @@ const HelpScreen = () => {
     const [selectedId, setSelectedId] = useState<string>();
     const [screenData, setScreenData] = useState(Dimensions.get('window'));
 
+    /**
+     * Perform actions on scree load
+     */
     useEffect(() => {
 
         const updateDimensions = () => {
@@ -60,14 +64,15 @@ const HelpScreen = () => {
 
     }, []);
 
+    /**
+     * Record assistance request in db 
+     */
     const addAssistanceRequest = async() => {
         if(email === '' || firstName === '' || lastName === '' ||  servDesc === '')
         {
             Alert.alert('Email, First name, and Last name are required');
         }else {
             try {
-                Alert.alert('Sending to api ');
-                console.log(email, firstName,lastName,compName, compPhone,  servDesc, phExt);
                 await fetch('http://10.0.0.244:4000/api/requsthelp', {
                     method: 'POST',
                     headers: {
@@ -78,7 +83,6 @@ const HelpScreen = () => {
                 })
                 .then((res) => res.json())
                 .then((json) => {
-                    console.log(JSON.stringify(json));
                     if (json.success === true) {
                         Alert.alert('Message',json.message);
                         navigation.navigate('Home');
@@ -89,17 +93,19 @@ const HelpScreen = () => {
                 .catch((err) => {
                     Alert.alert('ERROR ',err);
                     console.error('Error   ',err);
-                    console.log('ERROR1 \n',err);
                 });
             } catch (error) {
                 console.error('ERROR ',error);
-                console.log('ERROR2 \n',error);
-
             }
         }
     };
 
-    const validateEmail = (email) => {
+    /**
+     * Performs email validation
+     * @param email 
+     * @returns 
+     */
+    const validateEmail = (email: string) => {
         try {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
@@ -108,6 +114,10 @@ const HelpScreen = () => {
         }
     };
 
+    /**
+     * Handles assistance request submission
+     * @returns 
+     */
     const btnSubmit = async() => {
         try {
             if (!validateEmail(email)) {
@@ -124,11 +134,14 @@ const HelpScreen = () => {
             }
         } catch (error) {
             console.error(error);
-            console.log('ERROR3 \n',error);
         }
     };
 
-    const handleRadioChange = (radioButtonsArray) => {
+    /**
+     * Handles radion button default value change
+     * @param radioButtonsArray 
+     */
+    const handleRadioChange = (radioButtonsArray: any) => {
         try {
             setSelectedId(radioButtonsArray);
             setConPref(radioButtonsArray);
@@ -137,7 +150,12 @@ const HelpScreen = () => {
         }
     };
 
-    const renderItem = ({ item }) => (
+    /**
+     * Construct static input objects
+     * @param param0 
+     * @returns 
+     */
+    const renderItem = ({ item }: { item: Item })     => (
         <View style={styles.controlView}>
             <Text style={styles.labels}>{item.label}</Text>
             <TextInput
@@ -150,28 +168,25 @@ const HelpScreen = () => {
         </View>
     );
 
-    const data = [
+    /**
+     * Initialize static input elements and store in an array
+     */
+    const data:Item[] = [
         { key: 'company', label: 'Company Name', placeholder: 'Company Name', value: compName, onChangeText: setCompName },
         { key: 'email', label: 'Email', placeholder: 'Email Address', value: email, onChangeText: setEmail },
         { key: 'firstName', label: 'First Name', placeholder: 'First Name', value: firstName, onChangeText: setFirstName },
         { key: 'lastName', label: 'Last Name', placeholder: 'Last Name', value: lastName, onChangeText: setLastName },
         { key: 'compPhone', label: 'Phone', placeholder: 'Phone Number', value: compPhone, onChangeText: setCompPhone,  keyboardType: 'number-pad' },
         { key: 'phExt', label: 'Phone Ext', placeholder: 'Phone Extension', value: phExt, onChangeText: setPhExt, keyboardType: 'number-pad' },
-        // Add more items as needed
     ];
 
-    const radioButtons = useMemo(() => ([
-        {
-            id: '1', 
-            label: 'Phone',
-            value: 'phone'
-        },
-        {
-            id: '2',
-            label: 'Email',
-            value: 'email'
-        }
-    ]), []);
+    /**
+     * Initialize static radio button elements and store in an array
+     */
+    const radioButtons: RadioButton[] = [
+        { id: '1', label: 'Phone 1', value: 'phone' },
+        { id: '2', label: 'Email 2', value: 'email' }
+    ];
 
     return(
         <KeyboardAvoidingView
@@ -201,7 +216,6 @@ const HelpScreen = () => {
 
                     <View style={{width: '100%',borderBottomColor: 'lightblue',borderBottomWidth: 4, backgroundColor: '#fff'}}>
                         <Text style={styles.greetText}>Request Assistance</Text>
-                        {/* <Text style={styles.appName}>Request Assistance</Text> */}
                     </View>
                     
                     <View style={{height:'59%',width: screenData.width+5,padding:0}}>

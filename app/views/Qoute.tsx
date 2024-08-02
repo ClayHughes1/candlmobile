@@ -23,6 +23,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import DropDownPicker from 'react-native-dropdown-picker';
 import {RadioGroup} from 'react-native-radio-buttons-group';
 import Orientation from 'react-native-orientation-locker';
+import { Item , RadioButton} from './../../src/types/types.ts'; 
 
 const QouteScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
@@ -33,12 +34,15 @@ const QouteScreen = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [servDesc, setServDesc] = useState('');
-    const [servType, setServType] = useState(null);
+    const [servType, setServType] = useState<string>('');
     const [conPref, setConPref] = useState(null);
     const [open, setOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<string>();
     const [screenData, setScreenData] = useState(Dimensions.get('window'));
 
+    /**
+     * Perform actions on screen load
+     */
     useEffect(() => {
 
         const updateDimensions = () => {
@@ -61,21 +65,19 @@ const QouteScreen = () => {
 
     }, []);
 
-    const radioButtons = useMemo(() => ([
-        {
-            id: '1', 
-            label: 'Phone',
-            value: 'phone'
-        },
-        {
-            id: '2',
-            label: 'Email',
-            value: 'email'
-        }
-    ]), []);
+    /**
+     * Initialize static radio button elements and store in an array
+     */
+    const radioButtons: RadioButton[] = [
+        { id: '1', label: 'Phone 1', value: 'phone' },
+        { id: '2', label: 'Email 2', value: 'email' }
+    ];
 
+    /**
+     * Record quote request data in db
+     */
     const addQouteData = async() => {
-        if(email === '' || firstName === '' || lastName === '' || servType === 0 || servDesc === '')
+        if(email === '' || firstName === '' || lastName === '' || servType === "0" || servDesc === '')
         {
             Alert.alert('Email, First name, and Last name are required');
         }else {
@@ -111,6 +113,9 @@ const QouteScreen = () => {
         }
     };
 
+    /**
+     * Initialize drop down pikcer selection elements
+     */
     const [items, setItems] = useState([
         {label: 'Select', value: '0'},
         {label: 'Mobile', value: '1'},
@@ -118,9 +123,13 @@ const QouteScreen = () => {
         {label: 'PLatform', value: '3'},
     ]);
 
-    const handleChangeValue = (value) => {
+    /**
+     * Handles drop down picker change event
+     * @param value 
+     */
+    const handleChangeValue = (value: any) => {
         try {
-            if(value > 0)
+            if(value > "0")
             {
                 setServType(value);
             }
@@ -132,7 +141,12 @@ const QouteScreen = () => {
         }
     };
 
-    const validateEmail = (email) => {
+    /**
+     * Performs email validation functionality
+     * @param email 
+     * @returns 
+     */
+    const validateEmail = (email: string) => {
         try {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
@@ -141,6 +155,10 @@ const QouteScreen = () => {
         }
     };
 
+    /**
+     * Handles qoute request submission
+     * @returns 
+     */
     const btnSubmit = async() => {
         try {
             if (!validateEmail(email)) {
@@ -161,7 +179,11 @@ const QouteScreen = () => {
         }
     };
 
-    const handleRadioChange = (radioButtonsArray) => {
+    /**
+     * Handles radion buttton value change event
+     * @param radioButtonsArray 
+     */
+    const handleRadioChange = (radioButtonsArray: any) => {
         try {
             setSelectedId(radioButtonsArray);
             setConPref(radioButtonsArray);
@@ -170,7 +192,10 @@ const QouteScreen = () => {
         }
     };
 
-    const data = [
+    /**
+     * Creates static input elements 
+     */
+    const data:Item[] = [
         { key: 'company', label: 'Company Name', placeholder: 'Company Name', value: compName, onChangeText: setCompName },
         { key: 'email', label: 'Email', placeholder: 'Email Address', value: email, onChangeText: setEmail },
         { key: 'firstName', label: 'First Name', placeholder: 'First Name', value: firstName, onChangeText: setFirstName },
@@ -180,7 +205,12 @@ const QouteScreen = () => {
         // Add more items as needed
     ];
 
-    const renderItem = ({ item }) => (
+    /**
+     * Construct static input objects
+     * @param param0 
+     * @returns 
+     */
+    const renderItem = ({ item }: { item: Item })     => (
         <View style={styles.controlView}>
             <Text style={styles.labels}>{item.label}</Text>
             <TextInput
